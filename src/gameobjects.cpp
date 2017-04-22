@@ -10,9 +10,11 @@
 Planet planet;
 
 sf::Texture * enemy_texture;
+sf::Texture * bullet_texture;
 
-std::vector<sf::Sprite*> towers;
+std::vector<Tower*> towers;
 std::vector<Enemy*> enemies; // @Refactor: Collapse this into enemy_render_queue?
+std::vector<Bullet*> bullets;
 
 sf::Vector2f GetPositionAroundPlanet(float degrees, sf::Vector2f start_pos) {
 
@@ -41,6 +43,7 @@ sf::Vector2f GetPositionAroundPlanet(float degrees, float start_x, float start_y
 void SpawnEnemy() {
 
 	Enemy * new_enemy = new Enemy;
+	new_enemy->health = 100;
 	sf::Sprite * new_enemy_sprite = new sf::Sprite;
 	new_enemy->sprite = new_enemy_sprite;
 
@@ -57,11 +60,28 @@ void SpawnEnemy() {
 
 }
 
-void AddTower(sf::Vector2f pos, sf::Texture * texture) {
+void ShootAtEnemy(Tower * tower, Enemy * target) {
 
-	sf::Sprite * new_tower = new sf::Sprite;
-	new_tower->setTexture(*texture);
-	new_tower->setOrigin(new_tower->getGlobalBounds().width / 2, new_tower->getGlobalBounds().height / 2);
+	Bullet * new_bullet = new Bullet;
+	sf::Sprite * new_bullet_sprite = new sf::Sprite;
+	new_bullet_sprite->setTexture(*bullet_texture);
+	new_bullet_sprite->setPosition(tower->sprite->getPosition());
+	bullets.push_back(new_bullet);
+	bullet_render_queue.push_back(new_bullet_sprite);
+
+	new_bullet->sprite = new_bullet_sprite;
+	new_bullet->target = target;
+
+}
+
+void AddTower(sf::Vector2f pos, sf::Texture * texture) {
+	
+	Tower * new_tower = new Tower;
+	sf::Sprite * new_tower_sprite = new sf::Sprite;
+	new_tower->sprite = new_tower_sprite;
+	new_tower->shoot_cooldown = 0;
+	new_tower_sprite->setTexture(*texture);
+	new_tower_sprite->setOrigin(new_tower_sprite->getGlobalBounds().width / 2, new_tower_sprite->getGlobalBounds().height / 2);
 
 	// Position
 	float vX = pos.x - planet.x_pos;
@@ -69,8 +89,8 @@ void AddTower(sf::Vector2f pos, sf::Texture * texture) {
 
 	float magV = sqrt(vX*vX + vY*vY);
 
-	float aX = planet.x_pos + vX / magV * planet.radius;
-	float aY = planet.y_pos + vY / magV * planet.radius;
+	float aX = planet.x_pos + vX / magV * planet.radius - 20;
+	float aY = planet.y_pos + vY / magV * planet.radius - 20;
 
 	// Rotation
 	float angle = atan2(pos.y - planet.y_pos, pos.x - planet.x_pos);
@@ -80,35 +100,71 @@ void AddTower(sf::Vector2f pos, sf::Texture * texture) {
 	if (angle < 0)
 		angle = 360 + angle;
 
-	new_tower->setRotation(angle);
-	new_tower->setPosition(aX,aY);
+	new_tower_sprite->setRotation(angle);
+	new_tower_sprite->setPosition(aX,aY);
 	towers.push_back(new_tower);
-	tower_render_queue.push_back(new_tower);
+	tower_render_queue.push_back(new_tower_sprite);
 
 }
 
-void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
+void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
 	float to_rotate = (((1280 / 2) - sf::Mouse::getPosition(*window).x) * 0.15 * delta_time);
+
+	/********************
+	*** PLANET/TOWERS ***
+	*********************/
 
 	// Deal with rotation of the planet
 	if (planet.rotating) {
 		planet.sprite->setRotation(
 			planet.sprite->getRotation() + to_rotate);
-	
+
 		for (int i = 0; i < towers.size(); i++) {
 
-			sf::Vector2f old_pos = towers[i]->getPosition();
-			towers[i]->setPosition(planet.x_pos, planet.y_pos);
-			towers[i]->setRotation(
-				towers[i]->getRotation() + to_rotate);
-			towers[i]->setPosition(old_pos);
+			sf::Vector2f old_pos = towers[i]->sprite->getPosition();
+			towers[i]->sprite->setPosition(planet.x_pos, planet.y_pos);
+			towers[i]->sprite->setRotation(
+				towers[i]->sprite->getRotation() + to_rotate);
+			towers[i]->sprite->setPosition(old_pos);
 
 			sf::Vector2f rotated = GetPositionAroundPlanet(to_rotate, old_pos);
 
-			towers[i]->setPosition(rotated.x, rotated.y);
+			towers[i]->sprite->setPosition(rotated.x, rotated.y);
 
 		}
+
+	}
+
+	// Every frame
+	for (int i = 0; i < towers.size(); i++) {
+
+		for (int j = 0; j < enemies.size(); j++) {
+
+			if (sqrt(
+				pow(towers[i]->sprite->getPosition().x - enemies[j]->sprite->getPosition().y, 2) +
+				pow(towers[i]->sprite->getPosition().y - enemies[j]->sprite->getPosition().y, 2)) < 1000) {
+
+				if (towers[i]->shoot_cooldown <= 0) {
+					ShootAtEnemy(towers[i], enemies[j]);
+					towers[i]->shoot_cooldown = 0.1;
+					break;
+				}
+
+			}
+
+		}
+
+		towers[i]->shoot_cooldown -= delta_time;
+
+	}
+
+	/****************
+	**** ENEMIES ****
+	*****************/
+
+	// Deal with rotation of the planet
+	if (planet.rotating) {
 
 		for (int i = 0; i < enemies.size(); i++) {
 
@@ -117,12 +173,12 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 			enemies[i]->sprite->setPosition(rotated.x, rotated.y);
 
 		}
-	
+
 	}
 
 	// Every frame
 	for (int i = 0; i < enemies.size(); i++) {
-	
+
 		auto epos = enemies[i]->sprite->getPosition();
 
 		// Move towards planet
@@ -141,9 +197,32 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 		enemies[i]->sprite->setRotation(
 			enemies[i]->sprite->getRotation() + 200 * delta_time);
 
+		// Check health
+		if (enemies[i]->health <= 0) {
+		
+			enemy_render_queue.erase(std::remove(enemy_render_queue.begin(), enemy_render_queue.end(), enemies[i]->sprite));
+			enemies.erase(std::remove(enemies.begin(), enemies.end(), enemies[i]));
+			i--;
+
+			continue;
+
+		}
+
 		// Check for planet collision
 		if (sqrt(pow(planet.x_pos - epos.x, 2) + pow(planet.y_pos - epos.y, 2)) < 1020) {
-		
+
+			for (int b = 0; b < bullets.size(); b++) {
+			
+				if (bullets[b]->target == enemies[i]) {
+				
+					bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[b]->sprite));
+					bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[i]));
+					b--;
+
+				}
+
+			}
+
 			// @Refactor: It works, but there are better ways to do this that require redoing all of it
 			enemy_render_queue.erase(std::remove(enemy_render_queue.begin(), enemy_render_queue.end(), enemies[i]->sprite));
 			enemies.erase(std::remove(enemies.begin(), enemies.end(), enemies[i]));
@@ -155,11 +234,52 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 
 	}
 
-}
+	/****************
+	**** BULLETS ****
+	*****************/
 
-void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
+	// Deal with rotation of the planet
+	if (planet.rotating) {
 
-	UpdatePlanet(delta_time, window);
+		for (int i = 0; i < bullets.size(); i++) {
+
+			sf::Vector2f old_pos = bullets[i]->sprite->getPosition();
+			sf::Vector2f rotated = GetPositionAroundPlanet(to_rotate, old_pos);
+			bullets[i]->sprite->setPosition(rotated.x, rotated.y);
+
+		}
+
+	}
+
+	for (int i = 0; i < bullets.size(); i++) {
+	
+		sf::Vector2f bpos = bullets[i]->sprite->getPosition();
+		sf::Vector2f tpos = bullets[i]->target->sprite->getPosition();
+
+		// Move towards enemy
+		sf::Vector2f move_vector;
+		move_vector.x = tpos.x - bpos.x;
+		move_vector.y = tpos.y - bpos.y;
+		float mv_len = sqrt(move_vector.x * move_vector.x + move_vector.y * move_vector.y);
+		move_vector.x = move_vector.x / mv_len; // normalize
+		move_vector.y = move_vector.y / mv_len;
+		bpos.x += move_vector.x * 400 * delta_time;
+		bpos.y += move_vector.y * 400 * delta_time;
+
+		bullets[i]->sprite->setPosition(bpos);
+
+		if (sqrt(pow(bpos.x - tpos.x, 2) + pow(bpos.y - tpos.y, 2)) < 1.0) {
+		
+			// Hit enemy
+			bullets[i]->target->health -= 15.0;
+
+			bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[i]->sprite));
+			bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[i]));
+			i--;
+
+		}
+
+	}
 
 }
 
@@ -168,6 +288,10 @@ void InitializeGameObjects() {
 	// Enemy texture
 	enemy_texture = new sf::Texture;
 	enemy_texture->loadFromFile("../resources/grunt.png");
+
+	// Bullet texture
+	bullet_texture = new sf::Texture;
+	bullet_texture->loadFromFile("../resources/bullet.png");
 
 	// Planet
 	sf::Texture * planet_texture = new sf::Texture;

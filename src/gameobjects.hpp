@@ -14,15 +14,30 @@ struct Planet {
 	
 };
 
+struct Tower {
+
+	sf::Sprite * sprite;
+	float shoot_cooldown;
+
+};
+
 struct Enemy {
 
 	sf::Sprite * sprite;
+	float health;
+
+};
+
+struct Bullet {
+
+	sf::Sprite * sprite;
+	Enemy * target;
 
 };
 
 extern Planet planet;
 
-extern std::vector<sf::Sprite*> towers;
+extern std::vector<Tower*> towers;
 
 void SpawnEnemy();
 void AddTower(sf::Vector2f pos, sf::Texture * texture);

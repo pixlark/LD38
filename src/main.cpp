@@ -58,6 +58,7 @@ int main() {
 		RenderFromQueue(&window, &general_render_queue);
 		RenderFromQueue(&window, &tower_render_queue);
 		RenderFromQueue(&window, &enemy_render_queue);
+		RenderFromQueue(&window, &bullet_render_queue);
 		RenderFromQueue(&window, &ui_render_queue);
 		window.display();
 		
