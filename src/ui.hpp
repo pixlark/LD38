@@ -3,6 +3,15 @@
 
 #include <SFML/Graphics.hpp>
 
+struct ProgressBar {
+
+	sf::Sprite * bg;
+	sf::RectangleShape * bar;
+	float max_value;
+	float max_width;
+
+};
+
 struct TextButton {
 
 	sf::Sprite * sprite;

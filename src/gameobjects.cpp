@@ -54,7 +54,6 @@ void SpawnEnemy() {
 
 	enemies.push_back(new_enemy);
 	enemy_render_queue.push_back(new_enemy_sprite);
-	new_enemy->render_id = enemy_render_queue.size() - 1;
 
 }
 
@@ -150,6 +149,8 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 			enemies.erase(std::remove(enemies.begin(), enemies.end(), enemies[i]));
 			i--;
 
+			planet.health -= 5;
+
 		}
 
 	}
@@ -180,6 +181,7 @@ void InitializeGameObjects() {
 	planet.sprite = planet_sprite;
 	planet.radius = planet_sprite->getGlobalBounds().height / 2;
 	planet.rotating = false;
+	planet.health = 100;
 	general_render_queue.push_back(planet_sprite);
 	
 }

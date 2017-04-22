@@ -11,6 +11,7 @@ sf::Text * debug_text;
 
 sf::Texture * default_button_texture;
 TextButton round_start_button;
+ProgressBar planet_health_bar;
 
 Cursors cursors;
 sf::Sprite * cursor_sprite;
@@ -77,11 +78,19 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 
 	}
 
+
+
 }
 
 void UpdateUI(float delta_time, sf::RenderWindow * window) {
 
 	cursor_sprite->setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(*window)));
+
+	// Update health bar
+	sf::Vector2f bar_size;
+	bar_size.x = (planet.health * planet_health_bar.max_width) / planet_health_bar.max_value;
+	bar_size.y = planet_health_bar.bar->getSize().y;
+	if (bar_size.x >= 0) planet_health_bar.bar->setSize(bar_size);
 	
 }
 
@@ -142,6 +151,27 @@ void InitializeUI() {
 	InitializeButton(&round_start_button, 1130, 630, "START");
 	rsb_text->setColor(sf::Color::White);
 	rsb_text->setCharacterSize(50);
+
+	// Planet health bar
+	sf::Texture * bar_bg_texture = new sf::Texture;
+	bar_bg_texture->loadFromFile("../resources/bar_bg.png");
+	sf::Sprite * bar_bg_sprite = new sf::Sprite;
+	bar_bg_sprite->setTexture(*bar_bg_texture);
+	sf::RectangleShape * bar_rect = new sf::RectangleShape;
+	bar_rect->setPosition(6, 6);
+	bar_rect->setFillColor(sf::Color::Red);
+	sf::Vector2f bar_size;
+	bar_size.x = 190;
+	bar_size.y = 40;
+	bar_rect->setSize(bar_size);
+
+	planet_health_bar.bg = bar_bg_sprite;
+	planet_health_bar.bar = bar_rect;
+	planet_health_bar.max_value = 100;
+	planet_health_bar.max_width = 190;
+	
+	ui_render_queue.push_back(bar_bg_sprite);
+	ui_render_queue.push_back(bar_rect);
 
 	// Basic tower button
 	sf::Texture * ui_tower_texture = new sf::Texture;

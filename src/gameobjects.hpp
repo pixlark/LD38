@@ -10,13 +10,13 @@ struct Planet {
 	float radius;
 	float x_pos;
 	float y_pos;
+	float health;
 	
 };
 
 struct Enemy {
 
 	sf::Sprite * sprite;
-	int render_id;
 
 };
 
