@@ -9,8 +9,8 @@ sf::Font * default_font;
 BuyButtons buy_buttons;
 sf::Text * debug_text;
 
-//sf::Texture * default_button_texture;
-//TextButton round_start_button;
+sf::Texture * default_button_texture;
+TextButton round_start_button;
 
 Cursors cursors;
 sf::Sprite * cursor_sprite;
@@ -56,6 +56,12 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 			placing_tower = true;
 			return true;
 
+		} else if (round_start_button.sprite->getGlobalBounds().contains(
+			static_cast<sf::Vector2f>(
+				mouse_pos))) {
+			
+			SpawnEnemy();
+
 		} else {
 			return false;
 		}
@@ -87,7 +93,7 @@ void InitializeTextDefaults(sf::Text * text) {
 
 }
 
-/*void InitializeButton(
+void InitializeButton(
 	TextButton * button,
 	int x_pos, int y_pos,
 	std::string button_text) {
@@ -102,7 +108,7 @@ void InitializeTextDefaults(sf::Text * text) {
 	ui_render_queue.push_back(button->sprite);
 	ui_render_queue.push_back(button->text);
 
-}*/
+}
 
 void InitializeUI() {
 
@@ -111,7 +117,8 @@ void InitializeUI() {
 	default_font->loadFromFile("../resources/Inconsolata.otf");
 
 	// Get default textures
-	//default_button_texture->loadFromFile("../resources/button.png");
+	default_button_texture = new sf::Texture;
+	default_button_texture->loadFromFile("../resources/button.png");
 
 	// Get cursors
 	cursors.default_cursor = new sf::Texture;
@@ -128,11 +135,13 @@ void InitializeUI() {
 	ui_render_queue.push_back(debug_text);
 
 	// Round start button
-	/*sf::Sprite * rsb_sprite = new sf::Sprite;
+	sf::Sprite * rsb_sprite = new sf::Sprite;
 	sf::Text * rsb_text = new sf::Text;
 	round_start_button.sprite = rsb_sprite;
-	round_start_button.text = rsb_text;*/
-	//InitializeButton(&round_start_button, 0, 0, "START");
+	round_start_button.text = rsb_text;
+	InitializeButton(&round_start_button, 1130, 630, "START");
+	rsb_text->setColor(sf::Color::White);
+	rsb_text->setCharacterSize(50);
 
 	// Basic tower button
 	sf::Texture * ui_tower_texture = new sf::Texture;

@@ -17,6 +17,7 @@ extern Planet planet;
 
 extern std::vector<sf::Sprite*> towers;
 
+void SpawnEnemy();
 void AddTower(sf::Vector2f pos, sf::Texture * texture);
 
 void UpdateGameObjects(float delta_time, sf::RenderWindow * window);

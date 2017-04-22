@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <time.h>
 
 #include "gameobjects.hpp"
 #include "helpers.hpp"
@@ -18,6 +19,7 @@ void RenderFromQueue(sf::RenderWindow * window, std::vector<sf::Drawable*> * que
 
 int main() {
 
+	srand(time(0));
 	InitializeUI();
 	InitializeGameObjects();
 	
@@ -52,9 +54,10 @@ int main() {
 		UpdateGameObjects(delta_time, &window);
 		UpdateUI(delta_time, &window);
 
-		window.clear(sf::Color::White);
+		window.clear(sf::Color::Black);
 		RenderFromQueue(&window, &general_render_queue);
-		RenderFromQueue(&window, &tower_draw_queue);
+		RenderFromQueue(&window, &tower_render_queue);
+		RenderFromQueue(&window, &enemy_render_queue);
 		RenderFromQueue(&window, &ui_render_queue);
 		window.display();
 		

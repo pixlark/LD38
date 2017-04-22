@@ -9,7 +9,50 @@
 
 Planet planet;
 
+sf::Texture * enemy_texture;
+
 std::vector<sf::Sprite*> towers;
+std::vector<sf::Sprite*> enemies;
+
+sf::Vector2f GetPositionAroundPlanet(float degrees, sf::Vector2f start_pos) {
+
+	sf::Vector2f rotated;
+
+	float rads = degrees * (M_PI / 180);
+	rotated.x = cos(rads) * (start_pos.x - planet.x_pos) - sin(rads) * (start_pos.y - planet.y_pos) + planet.x_pos;
+	rotated.y = sin(rads) * (start_pos.x - planet.x_pos) + cos(rads) * (start_pos.y - planet.y_pos) + planet.y_pos;
+
+	return rotated;
+
+}
+
+sf::Vector2f GetPositionAroundPlanet(float degrees, float start_x, float start_y) {
+
+	sf::Vector2f rotated;
+
+	float rads = degrees * (M_PI / 180);
+	rotated.x = cos(rads) * (start_x - planet.x_pos) - sin(rads) * (start_y - planet.y_pos) + planet.x_pos;
+	rotated.y = sin(rads) * (start_x - planet.x_pos) + cos(rads) * (start_y - planet.y_pos) + planet.y_pos;
+
+	return rotated;
+
+}
+
+void SpawnEnemy() {
+
+	sf::Sprite * new_enemy = new sf::Sprite;
+	new_enemy->setTexture(*enemy_texture);
+	new_enemy->setOrigin(new_enemy->getGlobalBounds().width / 2, new_enemy->getGlobalBounds().height / 2);
+
+	float rotation = rand() % 360;
+	sf::Vector2f spawn_pos = GetPositionAroundPlanet(rotation, 1280/2, 200);
+
+	new_enemy->setPosition(spawn_pos);
+
+	enemies.push_back(new_enemy);
+	enemy_render_queue.push_back(new_enemy);
+
+}
 
 void AddTower(sf::Vector2f pos, sf::Texture * texture) {
 
@@ -37,7 +80,7 @@ void AddTower(sf::Vector2f pos, sf::Texture * texture) {
 	new_tower->setRotation(angle);
 	new_tower->setPosition(aX,aY);
 	towers.push_back(new_tower);
-	tower_draw_queue.push_back(new_tower);
+	tower_render_queue.push_back(new_tower);
 
 }
 
@@ -45,6 +88,7 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 
 	float to_rotate = (((1280 / 2) - sf::Mouse::getPosition(*window).x) * 0.15 * delta_time);
 
+	// Deal with rotation of the planet
 	if (planet.rotating) {
 		planet.planet_sprite->setRotation(
 			planet.planet_sprite->getRotation() + to_rotate);
@@ -57,15 +101,43 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 				towers[i]->getRotation() + to_rotate);
 			towers[i]->setPosition(old_pos);
 
-			float to_rotate_rads = to_rotate * (M_PI / 180);
-			
-			float rotatedX = cos(to_rotate_rads) * (old_pos.x - planet.x_pos) - sin(to_rotate_rads) * (old_pos.y - planet.y_pos) + planet.x_pos;
-			float rotatedY = sin(to_rotate_rads) * (old_pos.x - planet.x_pos) + cos(to_rotate_rads) * (old_pos.y - planet.y_pos) + planet.y_pos;
+			sf::Vector2f rotated = GetPositionAroundPlanet(to_rotate, old_pos);
 
-			towers[i]->setPosition(rotatedX, rotatedY);
+			towers[i]->setPosition(rotated.x, rotated.y);
+
+		}
+
+		for (int i = 0; i < enemies.size(); i++) {
+
+			sf::Vector2f old_pos = enemies[i]->getPosition();
+			sf::Vector2f rotated = GetPositionAroundPlanet(to_rotate, old_pos);
+			enemies[i]->setPosition(rotated.x, rotated.y);
 
 		}
 	
+	}
+
+	// Every frame
+	for (int i = 0; i < enemies.size(); i++) {
+	
+		auto epos = enemies[i]->getPosition();
+
+		// Move towards planet
+		sf::Vector2f move_vector;
+		move_vector.x = planet.x_pos - epos.x;
+		move_vector.y = planet.y_pos - epos.y;
+		float mv_len = sqrt(move_vector.x * move_vector.x + move_vector.y * move_vector.y);
+		move_vector.x = move_vector.x / mv_len; // normalize
+		move_vector.y = move_vector.y / mv_len;
+		epos.x += move_vector.x * 40 * delta_time;
+		epos.y += move_vector.y * 40 * delta_time;
+
+		enemies[i]->setPosition(epos);
+
+		// Spin
+		enemies[i]->setRotation(
+			enemies[i]->getRotation() + 200 * delta_time);
+
 	}
 
 }
@@ -77,6 +149,10 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 }
 
 void InitializeGameObjects() {
+
+	// Enemy texture
+	enemy_texture = new sf::Texture;
+	enemy_texture->loadFromFile("../resources/grunt.png");
 
 	// Planet
 	sf::Texture * planet_texture = new sf::Texture;
