@@ -3,6 +3,7 @@
 
 #include "render.hpp"
 #include "ui.hpp"
+#include "gameobjects.hpp"
 
 sf::Font * default_font;
 BuyButtons buy_buttons;
@@ -13,9 +14,23 @@ sf::Sprite * cursor_sprite;
 
 bool placing_tower = false;
 
+void ResetCursor() {
+
+	cursor_sprite->setTexture(*cursors.default_cursor);
+	cursor_sprite->setOrigin(0, 0);
+	sf::IntRect texture_rect;
+	texture_rect.left = 0;
+	texture_rect.width = cursors.default_cursor->getSize().x;
+	texture_rect.top = 0;
+	texture_rect.height = cursors.default_cursor->getSize().y;
+	cursor_sprite->setTextureRect(texture_rect);
+
+}
+
 void SetCursor(sf::Texture * cursor_texture) {
 
 	cursor_sprite->setTexture(*cursor_texture);
+	cursor_sprite->setOrigin(cursor_sprite->getGlobalBounds().width / 2, cursor_sprite->getGlobalBounds().height / 2);
 	sf::IntRect texture_rect;
 	texture_rect.left = 0;
 	texture_rect.width = cursor_texture->getSize().x;
@@ -25,16 +40,30 @@ void SetCursor(sf::Texture * cursor_texture) {
 
 }
 
+// @Refactor: Indescriptive name
 bool ButtonCheck(sf::Vector2i mouse_pos) {
 
-	if (buy_buttons.tower->getGlobalBounds().contains(
-		static_cast<sf::Vector2f>(
-			mouse_pos))) {
+	if (!placing_tower) {
+
+		if (buy_buttons.tower->getGlobalBounds().contains(
+			static_cast<sf::Vector2f>(
+				mouse_pos))) {
+
+			SetCursor(cursors.tower_drag);
+			placing_tower = true;
+			return true;
+
+		}
+
+	} else {
 	
-		SetCursor(cursors.tower_drag);
-		placing_tower = true;
+		ResetCursor();
+		placing_tower = false;
+
+		AddTower(static_cast<sf::Vector2f>(mouse_pos), cursors.tower_drag);
+
 		return true;
-	
+
 	}
 
 }

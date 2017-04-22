@@ -3,7 +3,6 @@
 
 #include "gameobjects.hpp"
 #include "ui.hpp"
-
 float rotate_origin_x;
 
 void ProcessInput(sf::Event event, float delta_time, sf::Vector2i mouse_pos) {

@@ -54,6 +54,7 @@ int main() {
 
 		window.clear(sf::Color::White);
 		RenderFromQueue(&window, &general_render_queue);
+		RenderFromQueue(&window, &tower_draw_queue);
 		RenderFromQueue(&window, &ui_render_queue);
 		window.display();
 		
