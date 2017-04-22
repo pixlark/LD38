@@ -1,33 +1,27 @@
 #include <SFML/Graphics.hpp>
 
+#include "gameobjects.hpp"
 #include "helpers.hpp"
+#include "render.hpp"
+#include "input.hpp"
 
 int main() {
 
-	sf::RenderWindow window(sf::VideoMode(1280, 720), "LD38");
-
-	sf::Texture planet_texture;
-	planet_texture.loadFromFile("../resources/planet.png");
+	InitializeGameObjects();
 	
-	sf::Sprite planet_sprite;
-	planet_sprite.setTexture(planet_texture);
-	sf::Vector2f center_pos;
-	planet_sprite.setOrigin(planet_sprite.getGlobalBounds().width / 2, planet_sprite.getGlobalBounds().height / 2);
-	planet_sprite.setPosition(640, 720 + 700);
-
-	bool rotating = false;
-	float rotate_origin_x;
-
+	sf::RenderWindow window(sf::VideoMode(1280, 720), "LD38");
 	sf::Clock delta_time_clock;
 
 	while (window.isOpen()) {
 
-		sf::Time delta_time = delta_time_clock.getElapsedTime();
+		float delta_time = delta_time_clock.getElapsedTime().asSeconds();
 		delta_time_clock.restart();
 
 		sf::Event window_event;
 		while (window.pollEvent(window_event)) {
 
+			ProcessInput(window_event, delta_time);
+			
 			switch (window_event.type) {
 
 				case sf::Event::Closed: {
@@ -35,32 +29,20 @@ int main() {
 					window.close();
 					
 				} break;
-
-				case sf::Event::MouseButtonPressed: {
-
-					rotating = true;
-					rotate_origin_x = sf::Mouse::getPosition().x;
-
-				} break;
-
-				case sf::Event::MouseButtonReleased: {
-
-					rotating = false;
-					
-				} break;
 				
 			}
 			
 		}
 
-		if (rotating) {
-
-			planet_sprite.setRotation(planet_sprite.getRotation() + ((sf::Mouse::getPosition().x - rotate_origin_x) * (0.15 * delta_time.asSeconds())));
-			
-		}
+		// Update functions
+		UpdateGameObjects(delta_time);
 
 		window.clear(sf::Color::White);
-		window.draw(planet_sprite);
+		for (int i = 0; i < general_render_queue.size(); i++) {
+		
+			window.draw(*general_render_queue[i]);
+
+		}
 		window.display();
 		
 	}
