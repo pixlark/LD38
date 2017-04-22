@@ -57,6 +57,13 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 				towers[i]->getRotation() + to_rotate);
 			towers[i]->setPosition(old_pos);
 
+			float to_rotate_rads = to_rotate * (M_PI / 180);
+			
+			float rotatedX = cos(to_rotate_rads) * (old_pos.x - planet.x_pos) - sin(to_rotate_rads) * (old_pos.y - planet.y_pos) + planet.x_pos;
+			float rotatedY = sin(to_rotate_rads) * (old_pos.x - planet.x_pos) + cos(to_rotate_rads) * (old_pos.y - planet.y_pos) + planet.y_pos;
+
+			towers[i]->setPosition(rotatedX, rotatedY);
+
 		}
 	
 	}
