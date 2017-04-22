@@ -6,17 +6,17 @@
 
 Planet planet;
 
-void UpdatePlanet(float delta_time) {
+void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 
 	if (planet.rotating) {
-		planet.planet_sprite->setRotation(planet.planet_sprite->getRotation() + ((planet.rotate_origin_x - sf::Mouse::getPosition().x) * 0.15 * delta_time));
+		planet.planet_sprite->setRotation(planet.planet_sprite->getRotation() + (((1280/2) - sf::Mouse::getPosition(*window).x) * 0.15 * delta_time));
 	}
 
 }
 
-void UpdateGameObjects(float delta_time) {
+void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
-	UpdatePlanet(delta_time);
+	UpdatePlanet(delta_time, window);
 
 }
 

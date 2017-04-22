@@ -3,6 +3,6 @@
 
 #include <SFML/Graphics.hpp>
 
-void ProcessInput(sf::Event, float delta_time);
+void ProcessInput(sf::Event, float delta_time, sf::Vector2i mouse_pos);
 
 #endif

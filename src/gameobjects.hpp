@@ -7,13 +7,12 @@ struct Planet {
 
 	sf::Sprite * planet_sprite;
 	bool rotating;
-	float rotate_origin_x;
 	
 };
 
 extern Planet planet;
 
-void UpdateGameObjects(float delta_time);
+void UpdateGameObjects(float delta_time, sf::RenderWindow * window);
 void InitializeGameObjects();
 
 #endif
