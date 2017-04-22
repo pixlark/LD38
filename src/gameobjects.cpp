@@ -7,6 +7,8 @@
 #include "gameobjects.hpp"
 #include "render.hpp"
 
+bool GAME_BEGUN = false;
+
 Planet planet;
 
 sf::Texture * enemy_texture;
@@ -15,6 +17,10 @@ sf::Texture * bullet_texture;
 std::vector<Tower*> towers;
 std::vector<Enemy*> enemies; // @Refactor: Collapse this into enemy_render_queue?
 std::vector<Bullet*> bullets;
+
+float game_timer;
+float spawn_cooldown;
+int towers_left;
 
 sf::Vector2f GetPositionAroundPlanet(float degrees, sf::Vector2f start_pos) {
 
@@ -109,7 +115,25 @@ void AddTower(sf::Vector2f pos, sf::Texture * texture) {
 
 void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
-	float to_rotate = (((1280 / 2) - sf::Mouse::getPosition(*window).x) * 0.15 * delta_time);
+	if (GAME_BEGUN) {
+		game_timer += delta_time;
+		spawn_cooldown -= delta_time;
+	}
+
+	/************
+	*** WAVES ***
+	*************/
+
+	if (GAME_BEGUN) {
+		if (enemies.size() < 7 && spawn_cooldown <= 0) {
+
+			SpawnEnemy();
+			spawn_cooldown = 3;
+
+		}
+	}
+
+	float to_rotate = (((1280 / 2) - sf::Mouse::getPosition(*window).x) * 0.25 * delta_time);
 
 	/********************
 	*** PLANET/TOWERS ***
@@ -188,8 +212,8 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 		float mv_len = sqrt(move_vector.x * move_vector.x + move_vector.y * move_vector.y);
 		move_vector.x = move_vector.x / mv_len; // normalize
 		move_vector.y = move_vector.y / mv_len;
-		epos.x += move_vector.x * 40 * delta_time;
-		epos.y += move_vector.y * 40 * delta_time;
+		epos.x += move_vector.x * 40 * delta_time * (game_timer / 50);
+		epos.y += move_vector.y * 40 * delta_time * (game_timer / 50);
 
 		enemies[i]->sprite->setPosition(epos);
 
@@ -200,6 +224,20 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 		// Check health
 		if (enemies[i]->health <= 0) {
 		
+			int limit = bullets.size();
+			for (int b = 0; b < bullets.size(); b++) {
+
+				if (bullets[b]->target == enemies[i]) {
+
+					bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[b]->sprite));
+					bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[b]));
+					b--;
+					limit--;
+
+				}
+
+			}
+
 			enemy_render_queue.erase(std::remove(enemy_render_queue.begin(), enemy_render_queue.end(), enemies[i]->sprite));
 			enemies.erase(std::remove(enemies.begin(), enemies.end(), enemies[i]));
 			i--;

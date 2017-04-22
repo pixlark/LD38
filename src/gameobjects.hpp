@@ -37,6 +37,7 @@ struct Bullet {
 
 extern Planet planet;
 
+extern bool GAME_BEGUN;
 extern std::vector<Tower*> towers;
 
 void SpawnEnemy();

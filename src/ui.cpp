@@ -61,7 +61,7 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 			static_cast<sf::Vector2f>(
 				mouse_pos))) {
 			
-			SpawnEnemy();
+			GAME_BEGUN = true;
 
 		} else {
 			return false;
