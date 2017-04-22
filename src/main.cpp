@@ -16,8 +16,14 @@ int main() {
 	planet_sprite.setPosition(640, 720 + 700);
 
 	bool rotating = false;
+	float rotate_origin_x;
+
+	sf::Clock delta_time_clock;
 
 	while (window.isOpen()) {
+
+		sf::Time delta_time = delta_time_clock.getElapsedTime();
+		delta_time_clock.restart();
 
 		sf::Event window_event;
 		while (window.pollEvent(window_event)) {
@@ -33,6 +39,7 @@ int main() {
 				case sf::Event::MouseButtonPressed: {
 
 					rotating = true;
+					rotate_origin_x = sf::Mouse::getPosition().x;
 
 				} break;
 
@@ -48,7 +55,7 @@ int main() {
 
 		if (rotating) {
 
-			planet_sprite.setRotation(planet_sprite.getRotation() + 0.02);
+			planet_sprite.setRotation(planet_sprite.getRotation() + ((sf::Mouse::getPosition().x - rotate_origin_x) * (0.15 * delta_time.asSeconds())));
 			
 		}
 
