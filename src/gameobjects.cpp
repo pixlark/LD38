@@ -89,6 +89,7 @@ void InitializeGameObjects() {
 	planet_sprite->setPosition(planet.x_pos, planet.y_pos);
 	planet.planet_sprite = planet_sprite;
 	planet.radius = planet_sprite->getGlobalBounds().height / 2;
+	planet.rotating = false;
 	general_render_queue.push_back(planet_sprite);
 	
 }

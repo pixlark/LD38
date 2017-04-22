@@ -9,6 +9,9 @@ sf::Font * default_font;
 BuyButtons buy_buttons;
 sf::Text * debug_text;
 
+//sf::Texture * default_button_texture;
+//TextButton round_start_button;
+
 Cursors cursors;
 sf::Sprite * cursor_sprite;
 
@@ -74,11 +77,39 @@ void UpdateUI(float delta_time, sf::RenderWindow * window) {
 	
 }
 
+void InitializeTextDefaults(sf::Text * text) {
+
+	text->setFont(*default_font);
+	text->setCharacterSize(24);
+	text->setColor(sf::Color::Black);
+
+}
+
+/*void InitializeButton(
+	TextButton * button,
+	int x_pos, int y_pos,
+	std::string button_text) {
+
+	button->sprite->setTexture(*default_button_texture);
+	button->sprite->setPosition(x_pos, y_pos);
+
+	InitializeTextDefaults(button->text);
+	button->text->setString(button_text);
+	button->text->setPosition(x_pos + 10, y_pos + 8);
+
+	ui_render_queue.push_back(button->sprite);
+	ui_render_queue.push_back(button->text);
+
+}*/
+
 void InitializeUI() {
 
 	// Get font
 	default_font = new sf::Font;
 	default_font->loadFromFile("../resources/Inconsolata.otf");
+
+	// Get default textures
+	//default_button_texture->loadFromFile("../resources/button.png");
 
 	// Get cursors
 	cursors.default_cursor = new sf::Texture;
@@ -92,7 +123,14 @@ void InitializeUI() {
 	debug_text->setColor(sf::Color::Black);
 	debug_text->setCharacterSize(12);
 	debug_text->setString("test");
-	ui_render_queue.push_back(debug_text);
+	//ui_render_queue.push_back(debug_text);
+
+	// Round start button
+	/*sf::Sprite * rsb_sprite = new sf::Sprite;
+	sf::Text * rsb_text = new sf::Text;
+	round_start_button.sprite = rsb_sprite;
+	round_start_button.text = rsb_text;*/
+	//InitializeButton(&round_start_button, 0, 0, "START");
 
 	// Basic tower button
 	sf::Texture * ui_tower_texture = new sf::Texture;

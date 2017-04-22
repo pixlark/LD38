@@ -3,6 +3,13 @@
 
 #include <SFML/Graphics.hpp>
 
+struct TextButton {
+
+	sf::Sprite * sprite;
+	sf::Text * text;
+
+};
+
 struct BuyButtons {
 
 	sf::Sprite * tower;
