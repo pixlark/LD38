@@ -5,12 +5,19 @@
 
 struct Planet {
 
-	sf::Sprite * planet_sprite;
+	sf::Sprite * sprite;
 	bool rotating;
 	float radius;
 	float x_pos;
 	float y_pos;
 	
+};
+
+struct Enemy {
+
+	sf::Sprite * sprite;
+	int render_id;
+
 };
 
 extern Planet planet;

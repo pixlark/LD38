@@ -12,7 +12,7 @@ Planet planet;
 sf::Texture * enemy_texture;
 
 std::vector<sf::Sprite*> towers;
-std::vector<sf::Sprite*> enemies;
+std::vector<Enemy*> enemies; // @Refactor: Collapse this into enemy_render_queue?
 
 sf::Vector2f GetPositionAroundPlanet(float degrees, sf::Vector2f start_pos) {
 
@@ -40,17 +40,21 @@ sf::Vector2f GetPositionAroundPlanet(float degrees, float start_x, float start_y
 
 void SpawnEnemy() {
 
-	sf::Sprite * new_enemy = new sf::Sprite;
-	new_enemy->setTexture(*enemy_texture);
-	new_enemy->setOrigin(new_enemy->getGlobalBounds().width / 2, new_enemy->getGlobalBounds().height / 2);
+	Enemy * new_enemy = new Enemy;
+	sf::Sprite * new_enemy_sprite = new sf::Sprite;
+	new_enemy->sprite = new_enemy_sprite;
+
+	new_enemy_sprite->setTexture(*enemy_texture);
+	new_enemy_sprite->setOrigin(new_enemy_sprite->getGlobalBounds().width / 2, new_enemy_sprite->getGlobalBounds().height / 2);
 
 	float rotation = rand() % 360;
 	sf::Vector2f spawn_pos = GetPositionAroundPlanet(rotation, 1280/2, 200);
 
-	new_enemy->setPosition(spawn_pos);
+	new_enemy_sprite->setPosition(spawn_pos);
 
 	enemies.push_back(new_enemy);
-	enemy_render_queue.push_back(new_enemy);
+	enemy_render_queue.push_back(new_enemy_sprite);
+	new_enemy->render_id = enemy_render_queue.size() - 1;
 
 }
 
@@ -90,8 +94,8 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 
 	// Deal with rotation of the planet
 	if (planet.rotating) {
-		planet.planet_sprite->setRotation(
-			planet.planet_sprite->getRotation() + to_rotate);
+		planet.sprite->setRotation(
+			planet.sprite->getRotation() + to_rotate);
 	
 		for (int i = 0; i < towers.size(); i++) {
 
@@ -109,9 +113,9 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 
 		for (int i = 0; i < enemies.size(); i++) {
 
-			sf::Vector2f old_pos = enemies[i]->getPosition();
+			sf::Vector2f old_pos = enemies[i]->sprite->getPosition();
 			sf::Vector2f rotated = GetPositionAroundPlanet(to_rotate, old_pos);
-			enemies[i]->setPosition(rotated.x, rotated.y);
+			enemies[i]->sprite->setPosition(rotated.x, rotated.y);
 
 		}
 	
@@ -120,7 +124,7 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 	// Every frame
 	for (int i = 0; i < enemies.size(); i++) {
 	
-		auto epos = enemies[i]->getPosition();
+		auto epos = enemies[i]->sprite->getPosition();
 
 		// Move towards planet
 		sf::Vector2f move_vector;
@@ -132,11 +136,21 @@ void UpdatePlanet(float delta_time, sf::RenderWindow * window) {
 		epos.x += move_vector.x * 40 * delta_time;
 		epos.y += move_vector.y * 40 * delta_time;
 
-		enemies[i]->setPosition(epos);
+		enemies[i]->sprite->setPosition(epos);
 
 		// Spin
-		enemies[i]->setRotation(
-			enemies[i]->getRotation() + 200 * delta_time);
+		enemies[i]->sprite->setRotation(
+			enemies[i]->sprite->getRotation() + 200 * delta_time);
+
+		// Check for planet collision
+		if (sqrt(pow(planet.x_pos - epos.x, 2) + pow(planet.y_pos - epos.y, 2)) < 1020) {
+		
+			// @Refactor: It works, but there are better ways to do this that require redoing all of it
+			enemy_render_queue.erase(std::remove(enemy_render_queue.begin(), enemy_render_queue.end(), enemies[i]->sprite));
+			enemies.erase(std::remove(enemies.begin(), enemies.end(), enemies[i]));
+			i--;
+
+		}
 
 	}
 
@@ -163,7 +177,7 @@ void InitializeGameObjects() {
 	planet.x_pos = 640;
 	planet.y_pos = 720 + 700;
 	planet_sprite->setPosition(planet.x_pos, planet.y_pos);
-	planet.planet_sprite = planet_sprite;
+	planet.sprite = planet_sprite;
 	planet.radius = planet_sprite->getGlobalBounds().height / 2;
 	planet.rotating = false;
 	general_render_queue.push_back(planet_sprite);
