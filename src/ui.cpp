@@ -56,6 +56,8 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 			placing_tower = true;
 			return true;
 
+		} else {
+			return false;
 		}
 
 	} else {
@@ -123,7 +125,7 @@ void InitializeUI() {
 	debug_text->setColor(sf::Color::Black);
 	debug_text->setCharacterSize(12);
 	debug_text->setString("test");
-	//ui_render_queue.push_back(debug_text);
+	ui_render_queue.push_back(debug_text);
 
 	// Round start button
 	/*sf::Sprite * rsb_sprite = new sf::Sprite;
