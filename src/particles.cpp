@@ -43,7 +43,7 @@ void UpdateParticles(float delta_time, sf::RenderWindow * window) {
 	for (int i = 0; i < explosions.size(); i++) {
 
 		sf::Color new_color = explosions[i].sprite->getColor();
-		new_color.a -= 0.00000000002 * delta_time;
+		new_color.a -= 0.000000000045 * delta_time;
 		explosions[i].sprite->setColor(new_color);
 
 	}

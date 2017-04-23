@@ -58,20 +58,24 @@ void ProcessInput(sf::Event event, float delta_time, sf::Vector2i mouse_pos) {
 	
 		switch (event.type) {
 
-			case sf::Event::MouseButtonPressed: {
+			case sf::Event::KeyPressed: {
 
-				general_render_queue.clear();
-				tower_render_queue.clear();
-				enemy_render_queue.clear();
-				bullet_render_queue.clear();
-				particle_render_queue.clear();
-				ui_render_queue.clear();
+				if (event.key.code == sf::Keyboard::Space) {
 
-				InitializeGameObjects();
-				InitializeAudio();
-				InitializeUI();
+					general_render_queue.clear();
+					tower_render_queue.clear();
+					enemy_render_queue.clear();
+					bullet_render_queue.clear();
+					particle_render_queue.clear();
+					ui_render_queue.clear();
 
-				game_state = PLAYING;
+					InitializeGameObjects();
+					InitializeAudio();
+					InitializeUI();
+
+					game_state = PLAYING;
+
+				}
 
 			}
 

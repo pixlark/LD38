@@ -26,8 +26,8 @@ int main() {
 	game_state = PLAYING; //
 
 	srand(time(0));
-	InitializeUI();
 	InitializeGameObjects();
+	InitializeUI();
 	InitializeAudio();
 	InitializeParticles();
 	StartMusic();
@@ -35,10 +35,9 @@ int main() {
 	sf::Image window_icon;
 	window_icon.loadFromFile("../resources/icon.png");
 
-	sf::RenderWindow window(sf::VideoMode(1280, 720), "LD38");
+	sf::RenderWindow window(sf::VideoMode(1280, 720), "Planet Defense");
 	window.setMouseCursorVisible(false);
 	window.setIcon(window_icon.getSize().x, window_icon.getSize().y, window_icon.getPixelsPtr());
-	window.setTitle("Planet Defense");
 
 	sf::Clock delta_time_clock;
 
@@ -73,6 +72,7 @@ int main() {
 		}
 
 		window.clear(sf::Color::Black);
+		window.draw(*starfield_sprite);
 		RenderFromQueue(&window, &general_render_queue);
 		RenderFromQueue(&window, &tower_render_queue);
 		RenderFromQueue(&window, &enemy_render_queue);

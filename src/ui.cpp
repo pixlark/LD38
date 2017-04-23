@@ -15,6 +15,8 @@ sf::Text * debug_text;
 sf::Text * towers_text;
 sf::Text * end_round_time_text;
 
+sf::Sprite * starfield_sprite;
+
 sf::Texture * default_button_texture;
 sf::Sprite * game_over_sprite;
 ProgressBar planet_health_bar;
@@ -119,6 +121,11 @@ void UpdateUI(float delta_time, sf::RenderWindow * window) {
 		end_round_time_text->setString(ertt_stream.str());
 		ui_render_queue.push_back(end_round_time_text);
 		game_state = PAUSED;
+	}
+
+	if (planet.rotating) {
+		float to_rotate = (((1280 / 2) - sf::Mouse::getPosition(*window).x) * 0.25 * delta_time);
+		starfield_sprite->setRotation(starfield_sprite->getRotation() + (to_rotate / 4));
 	}
 	
 }
@@ -240,4 +247,12 @@ void InitializeUI() {
 	cursor_sprite->setTexture(*cursors.default_cursor);
 	ui_render_queue.push_back(cursor_sprite);
 	
+	// Background starfield
+	sf::Texture * starfield_texture = new sf::Texture;
+	starfield_texture->loadFromFile("../resources/bg.png");
+	starfield_sprite = new sf::Sprite;
+	starfield_sprite->setTexture(*starfield_texture);
+	starfield_sprite->setOrigin(starfield_sprite->getGlobalBounds().width / 2, starfield_sprite->getGlobalBounds().height / 2);
+	starfield_sprite->setPosition(planet.sprite->getPosition());
+
 }
