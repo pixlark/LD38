@@ -1,11 +1,15 @@
 #define _USE_MATH_DEFINES
 
 #include <SFML/Graphics.hpp>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
 #include <math.h>
 #include <vector>
 
 #include "gameobjects.hpp"
 #include "render.hpp"
+#include "ui.hpp"
 
 bool GAME_BEGUN = false;
 
@@ -20,7 +24,7 @@ std::vector<Bullet*> bullets;
 
 float game_timer;
 float spawn_cooldown;
-int towers_left;
+uint8_t extra_towers_bitfield;
 
 sf::Vector2f GetPositionAroundPlanet(float degrees, sf::Vector2f start_pos) {
 
@@ -57,12 +61,35 @@ void SpawnEnemy() {
 	new_enemy_sprite->setOrigin(new_enemy_sprite->getGlobalBounds().width / 2, new_enemy_sprite->getGlobalBounds().height / 2);
 
 	float rotation = rand() % 360;
-	sf::Vector2f spawn_pos = GetPositionAroundPlanet(rotation, 1280/2, 200);
+	sf::Vector2f spawn_pos = GetPositionAroundPlanet(rotation, 1280/2, 10); // second coord is inverse for some reason
 
 	new_enemy_sprite->setPosition(spawn_pos);
 
 	enemies.push_back(new_enemy);
 	enemy_render_queue.push_back(new_enemy_sprite);
+
+}
+
+bool TowerCheck(sf::Vector2i mouse_pos) {
+
+	int limit = towers.size();
+	for (int i = 0; i < limit; i++) {
+	
+		if (towers[i]->sprite->getGlobalBounds().contains(
+			static_cast<sf::Vector2f>(mouse_pos))) {
+		
+			tower_render_queue.erase(std::remove(tower_render_queue.begin(), tower_render_queue.end(), towers[i]->sprite));
+			towers.erase(std::remove(towers.begin(), towers.end(), towers[i]));
+			i--;
+			limit--;
+
+			return true;
+		
+		}
+
+	}
+
+	return false;
 
 }
 
@@ -81,7 +108,7 @@ void ShootAtEnemy(Tower * tower, Enemy * target) {
 }
 
 void AddTower(sf::Vector2f pos, sf::Texture * texture) {
-	
+
 	Tower * new_tower = new Tower;
 	sf::Sprite * new_tower_sprite = new sf::Sprite;
 	new_tower->sprite = new_tower_sprite;
@@ -128,10 +155,27 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 		if (enemies.size() < 7 && spawn_cooldown <= 0) {
 
 			SpawnEnemy();
-			spawn_cooldown = 3;
+			spawn_cooldown = 4;
 
 		}
 	}
+
+	if (game_timer > 10 && (extra_towers_bitfield & 1) == 0) {
+		towers_left++;
+		extra_towers_bitfield = extra_towers_bitfield | 1;
+	}
+	if (game_timer > 40 && (extra_towers_bitfield & (1 << 1)) == 0) {
+		towers_left++;
+		extra_towers_bitfield = extra_towers_bitfield | (1 << 1);
+	}
+	if (game_timer > 75 && (extra_towers_bitfield & (1 << 2)) == 0) {
+		towers_left++;
+		extra_towers_bitfield = extra_towers_bitfield | (1 << 2);
+	}
+
+	std::stringstream debug_text_stream;
+	debug_text_stream << std::fixed << std::setprecision(1) << game_timer;
+	debug_text->setString(debug_text_stream.str());
 
 	float to_rotate = (((1280 / 2) - sf::Mouse::getPosition(*window).x) * 0.25 * delta_time);
 
@@ -167,7 +211,7 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
 			if (sqrt(
 				pow(towers[i]->sprite->getPosition().x - enemies[j]->sprite->getPosition().y, 2) +
-				pow(towers[i]->sprite->getPosition().y - enemies[j]->sprite->getPosition().y, 2)) < 1000) {
+				pow(towers[i]->sprite->getPosition().y - enemies[j]->sprite->getPosition().y, 2)) < 700) {
 
 				if (towers[i]->shoot_cooldown <= 0) {
 					ShootAtEnemy(towers[i], enemies[j]);
@@ -212,8 +256,13 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 		float mv_len = sqrt(move_vector.x * move_vector.x + move_vector.y * move_vector.y);
 		move_vector.x = move_vector.x / mv_len; // normalize
 		move_vector.y = move_vector.y / mv_len;
-		epos.x += move_vector.x * 40 * delta_time * (game_timer / 50);
-		epos.y += move_vector.y * 40 * delta_time * (game_timer / 50);
+
+		float time_multiplier = game_timer / 25;
+		if (time_multiplier > 3)
+			time_multiplier = 3;
+
+		epos.x += (move_vector.x * 40 * delta_time * time_multiplier);
+		epos.y += (move_vector.y * 40 * delta_time * time_multiplier);
 
 		enemies[i]->sprite->setPosition(epos);
 
@@ -312,7 +361,9 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 			bullets[i]->target->health -= 15.0;
 
 			bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[i]->sprite));
-			bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[i]));
+			if (std::find(bullets.begin(), bullets.end(), bullets[i]) != bullets.end()) {
+				bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[i]));
+			}
 			i--;
 
 		}
@@ -322,6 +373,8 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 }
 
 void InitializeGameObjects() {
+
+	extra_towers_bitfield = 0;
 
 	// Enemy texture
 	enemy_texture = new sf::Texture;
@@ -343,7 +396,7 @@ void InitializeGameObjects() {
 	planet.sprite = planet_sprite;
 	planet.radius = planet_sprite->getGlobalBounds().height / 2;
 	planet.rotating = false;
-	planet.health = 100;
+	planet.health = 50;
 	general_render_queue.push_back(planet_sprite);
 	
 }

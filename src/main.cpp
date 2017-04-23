@@ -6,6 +6,8 @@
 #include "render.hpp"
 #include "input.hpp"
 #include "ui.hpp"
+#include "music.hpp"
+#include "sound.hpp"
 
 void RenderFromQueue(sf::RenderWindow * window, std::vector<sf::Drawable*> * queue) {
 
@@ -22,6 +24,8 @@ int main() {
 	srand(time(0));
 	InitializeUI();
 	InitializeGameObjects();
+	InitializeAudio();
+	StartMusic();
 	
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "LD38");
 	window.setMouseCursorVisible(false);

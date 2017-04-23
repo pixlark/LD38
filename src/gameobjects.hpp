@@ -40,6 +40,8 @@ extern Planet planet;
 extern bool GAME_BEGUN;
 extern std::vector<Tower*> towers;
 
+bool TowerCheck(sf::Vector2i mouse_pos);
+
 void SpawnEnemy();
 void AddTower(sf::Vector2f pos, sf::Texture * texture);
 

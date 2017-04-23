@@ -1,13 +1,16 @@
 #include <SFML/Graphics.hpp>
+#include <sstream>
 #include <vector>
 
 #include "render.hpp"
 #include "ui.hpp"
 #include "gameobjects.hpp"
+#include "sound.hpp"
 
 sf::Font * default_font;
 BuyButtons buy_buttons;
 sf::Text * debug_text;
+sf::Text * towers_text;
 
 sf::Texture * default_button_texture;
 TextButton round_start_button;
@@ -15,6 +18,8 @@ ProgressBar planet_health_bar;
 
 Cursors cursors;
 sf::Sprite * cursor_sprite;
+
+int towers_left;
 
 bool placing_tower = false;
 
@@ -44,7 +49,7 @@ void SetCursor(sf::Texture * cursor_texture) {
 
 }
 
-// @Refactor: Indescriptive name
+// @Refactor: Non-descriptive name
 bool ButtonCheck(sf::Vector2i mouse_pos) {
 
 	if (!placing_tower) {
@@ -53,8 +58,14 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 			static_cast<sf::Vector2f>(
 				mouse_pos))) {
 
-			SetCursor(cursors.tower_drag);
-			placing_tower = true;
+			if (towers_left > 0) {
+
+				SetCursor(cursors.tower_drag);
+				placing_tower = true;
+				towers_left--;
+
+			}
+
 			return true;
 
 		} else if (round_start_button.sprite->getGlobalBounds().contains(
@@ -74,11 +85,11 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 
 		AddTower(static_cast<sf::Vector2f>(mouse_pos), cursors.tower_drag);
 
+		crunch_sound->play();
+
 		return true;
 
 	}
-
-
 
 }
 
@@ -91,6 +102,11 @@ void UpdateUI(float delta_time, sf::RenderWindow * window) {
 	bar_size.x = (planet.health * planet_health_bar.max_width) / planet_health_bar.max_value;
 	bar_size.y = planet_health_bar.bar->getSize().y;
 	if (bar_size.x >= 0) planet_health_bar.bar->setSize(bar_size);
+
+	// Update towers left text
+	std::stringstream towers_left_stream;
+	towers_left_stream << towers_left;
+	towers_text->setString(towers_left_stream.str());
 	
 }
 
@@ -138,10 +154,20 @@ void InitializeUI() {
 	// Debug text
 	debug_text = new sf::Text;
 	debug_text->setFont(*default_font);
-	debug_text->setColor(sf::Color::Black);
-	debug_text->setCharacterSize(12);
+	debug_text->setColor(sf::Color::White);
+	debug_text->setCharacterSize(24);
+	debug_text->setPosition(0, 50);
 	debug_text->setString("test");
 	ui_render_queue.push_back(debug_text);
+
+	// Towers left text
+	towers_text = new sf::Text;
+	towers_text->setFont(*default_font);
+	towers_text->setColor(sf::Color::White);
+	towers_text->setCharacterSize(40);
+	towers_text->setPosition(1240, 5);
+	ui_render_queue.push_back(towers_text);
+	towers_left = 1;
 
 	// Round start button
 	sf::Sprite * rsb_sprite = new sf::Sprite;
@@ -167,7 +193,7 @@ void InitializeUI() {
 
 	planet_health_bar.bg = bar_bg_sprite;
 	planet_health_bar.bar = bar_rect;
-	planet_health_bar.max_value = 100;
+	planet_health_bar.max_value = 50;
 	planet_health_bar.max_width = 190;
 	
 	ui_render_queue.push_back(bar_bg_sprite);
