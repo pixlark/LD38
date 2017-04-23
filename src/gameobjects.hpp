@@ -37,7 +37,6 @@ struct Bullet {
 
 extern Planet planet;
 
-extern bool GAME_BEGUN;
 extern std::vector<Tower*> towers;
 
 sf::Vector2f GetPositionAroundPlanet(float degrees, sf::Vector2f start_pos);

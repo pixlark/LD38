@@ -13,8 +13,6 @@
 #include "sound.hpp"
 #include "particles.hpp"
 
-bool GAME_BEGUN = false;
-
 Planet planet;
 
 sf::Texture * enemy_texture;
@@ -104,6 +102,8 @@ void ShootAtEnemy(Tower * tower, Enemy * target) {
 	bullets.push_back(new_bullet);
 	bullet_render_queue.push_back(new_bullet_sprite);
 
+	shoot_sound->play();
+
 	new_bullet->sprite = new_bullet_sprite;
 	new_bullet->target = target;
 
@@ -144,22 +144,21 @@ void AddTower(sf::Vector2f pos, sf::Texture * texture) {
 
 void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
-	if (GAME_BEGUN) {
-		game_timer += delta_time;
-		spawn_cooldown -= delta_time;
-	}
+	game_timer += delta_time;
+	spawn_cooldown -= delta_time;
 
 	/************
 	*** WAVES ***
 	*************/
 
-	if (GAME_BEGUN) {
-		if (enemies.size() < 7 && spawn_cooldown <= 0) {
+	if (enemies.size() < 7 && spawn_cooldown <= 0) {
 
-			SpawnEnemy();
-			spawn_cooldown = 4;
+		SpawnEnemy();
+		float next_spawn_cooldown = 5 - (game_timer / 10);
+		if (next_spawn_cooldown < 2)
+			next_spawn_cooldown = 2;
+		spawn_cooldown = next_spawn_cooldown;
 
-		}
 	}
 
 	if (game_timer > 10 && (extra_towers_bitfield & 1) == 0) {
@@ -368,7 +367,9 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 			// Hit enemy
 			bullets[i]->target->health -= 15.0;
 
-			bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[i]->sprite));
+			if (std::find(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[i]->sprite) != bullet_render_queue.end()) {
+				bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[i]->sprite));
+			}
 			if (std::find(bullets.begin(), bullets.end(), bullets[i]) != bullets.end()) {
 				bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[i]));
 			}

@@ -3,6 +3,8 @@
 
 #include "gameobjects.hpp"
 #include "ui.hpp"
+#include "sound.hpp"
+
 float rotate_origin_x;
 
 void ProcessInput(sf::Event event, float delta_time, sf::Vector2i mouse_pos) {
@@ -29,6 +31,7 @@ void ProcessInput(sf::Event event, float delta_time, sf::Vector2i mouse_pos) {
 			
 				if (TowerCheck(mouse_pos)) {
 					towers_left++;
+					unbuild_sound->play();
 				}
 
 			}

@@ -14,7 +14,6 @@ sf::Text * debug_text;
 sf::Text * towers_text;
 
 sf::Texture * default_button_texture;
-TextButton round_start_button;
 ProgressBar planet_health_bar;
 
 Cursors cursors;
@@ -69,12 +68,6 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 
 			return true;
 
-		} else if (round_start_button.sprite->getGlobalBounds().contains(
-			static_cast<sf::Vector2f>(
-				mouse_pos))) {
-			
-			GAME_BEGUN = true;
-
 		} else {
 			return false;
 		}
@@ -84,6 +77,8 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 		ResetCursor();
 		placing_tower = false;
 		sf::Vector2f place_position = static_cast<sf::Vector2f>(mouse_pos);
+
+		drill_sound->play();
 
 		AddTower(place_position, cursors.tower_drag);
 
@@ -170,13 +165,14 @@ void InitializeUI() {
 	towers_left = 1;
 
 	// Round start button
+	/*
 	sf::Sprite * rsb_sprite = new sf::Sprite;
 	sf::Text * rsb_text = new sf::Text;
 	round_start_button.sprite = rsb_sprite;
 	round_start_button.text = rsb_text;
 	InitializeButton(&round_start_button, 1130, 630, "START");
 	rsb_text->setColor(sf::Color::White);
-	rsb_text->setCharacterSize(50);
+	rsb_text->setCharacterSize(50);*/
 
 	// Planet health bar
 	sf::Texture * bar_bg_texture = new sf::Texture;
@@ -204,7 +200,7 @@ void InitializeUI() {
 	ui_tower_texture->loadFromFile("../resources/ui_tower.png");
 	sf::Sprite * ui_tower_sprite = new sf::Sprite;
 	ui_tower_sprite->setTexture(*ui_tower_texture);
-	ui_tower_sprite->setPosition(0, 640);
+	ui_tower_sprite->setPosition(0, 630);
 	buy_buttons.tower = ui_tower_sprite;
 	ui_render_queue.push_back(ui_tower_sprite);
 
