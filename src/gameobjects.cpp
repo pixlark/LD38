@@ -212,7 +212,7 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
 			if (sqrt(
 				pow(towers[i]->sprite->getPosition().x - enemies[j]->sprite->getPosition().y, 2) +
-				pow(towers[i]->sprite->getPosition().y - enemies[j]->sprite->getPosition().y, 2)) < 700) {
+				pow(towers[i]->sprite->getPosition().y - enemies[j]->sprite->getPosition().y, 2)) < 800) {
 
 				if (towers[i]->shoot_cooldown <= 0) {
 					ShootAtEnemy(towers[i], enemies[j]);
@@ -282,7 +282,7 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
 				if (bullets[b]->target == enemies[i]) {
 
-					bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[b]->sprite));
+					//bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[b]->sprite));
 					bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[b]));
 					b--;
 					limit--;
@@ -309,7 +309,7 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 			
 				if (bullets[b]->target == enemies[i]) {
 				
-					bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[b]->sprite));
+					//bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[b]->sprite));
 					bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[i]));
 					b--;
 
@@ -368,7 +368,7 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 			bullets[i]->target->health -= 15.0;
 
 			if (std::find(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[i]->sprite) != bullet_render_queue.end()) {
-				bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[i]->sprite));
+				//bullet_render_queue.erase(std::remove(bullet_render_queue.begin(), bullet_render_queue.end(), bullets[i]->sprite));
 			}
 			if (std::find(bullets.begin(), bullets.end(), bullets[i]) != bullets.end()) {
 				bullets.erase(std::remove(bullets.begin(), bullets.end(), bullets[i]));
@@ -376,6 +376,13 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 			i--;
 
 		}
+
+	}
+
+	bullet_render_queue.clear();
+	for (int i = 0; i < bullets.size(); i++) {
+	
+		bullet_render_queue.push_back(bullets[i]->sprite);
 
 	}
 
