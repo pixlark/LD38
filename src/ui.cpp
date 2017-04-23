@@ -6,6 +6,7 @@
 #include "ui.hpp"
 #include "gameobjects.hpp"
 #include "sound.hpp"
+#include "particles.hpp"
 
 sf::Font * default_font;
 BuyButtons buy_buttons;
@@ -82,10 +83,9 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 	
 		ResetCursor();
 		placing_tower = false;
+		sf::Vector2f place_position = static_cast<sf::Vector2f>(mouse_pos);
 
-		AddTower(static_cast<sf::Vector2f>(mouse_pos), cursors.tower_drag);
-
-		crunch_sound->play();
+		AddTower(place_position, cursors.tower_drag);
 
 		return true;
 

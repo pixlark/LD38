@@ -8,6 +8,7 @@
 #include "ui.hpp"
 #include "music.hpp"
 #include "sound.hpp"
+#include "particles.hpp"
 
 void RenderFromQueue(sf::RenderWindow * window, std::vector<sf::Drawable*> * queue) {
 
@@ -25,6 +26,7 @@ int main() {
 	InitializeUI();
 	InitializeGameObjects();
 	InitializeAudio();
+	InitializeParticles();
 	StartMusic();
 	
 	sf::RenderWindow window(sf::VideoMode(1280, 720), "LD38");
@@ -57,12 +59,14 @@ int main() {
 		// Update functions
 		UpdateGameObjects(delta_time, &window);
 		UpdateUI(delta_time, &window);
+		UpdateParticles(delta_time, &window);
 
 		window.clear(sf::Color::Black);
 		RenderFromQueue(&window, &general_render_queue);
 		RenderFromQueue(&window, &tower_render_queue);
 		RenderFromQueue(&window, &enemy_render_queue);
 		RenderFromQueue(&window, &bullet_render_queue);
+		RenderFromQueue(&window, &particle_render_queue);
 		RenderFromQueue(&window, &ui_render_queue);
 		window.display();
 		

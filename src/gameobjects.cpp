@@ -10,6 +10,8 @@
 #include "gameobjects.hpp"
 #include "render.hpp"
 #include "ui.hpp"
+#include "sound.hpp"
+#include "particles.hpp"
 
 bool GAME_BEGUN = false;
 
@@ -273,6 +275,9 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 		// Check health
 		if (enemies[i]->health <= 0) {
 		
+			crunch_sound->play();
+			Explode(enemies[i]->sprite->getPosition(), 5.0);
+
 			int limit = bullets.size();
 			for (int b = 0; b < bullets.size(); b++) {
 
@@ -297,6 +302,9 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
 		// Check for planet collision
 		if (sqrt(pow(planet.x_pos - epos.x, 2) + pow(planet.y_pos - epos.y, 2)) < 1020) {
+
+			crunch_sound->play();
+			Explode(enemies[i]->sprite->getPosition(), 5.0);
 
 			for (int b = 0; b < bullets.size(); b++) {
 			
