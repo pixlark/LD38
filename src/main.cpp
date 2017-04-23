@@ -23,7 +23,7 @@ void RenderFromQueue(sf::RenderWindow * window, std::vector<sf::Drawable*> * que
 
 int main() {
 
-	game_state = PLAYING;
+	game_state = PLAYING; //
 
 	srand(time(0));
 	InitializeUI();
