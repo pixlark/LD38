@@ -264,6 +264,8 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
 		epos.x += (move_vector.x * 40 * delta_time * time_multiplier);
 		epos.y += (move_vector.y * 40 * delta_time * time_multiplier);
+		//epos.x += (move_vector.x * 500 * delta_time * time_multiplier);
+		//epos.y += (move_vector.y * 500 * delta_time * time_multiplier);
 
 		enemies[i]->sprite->setPosition(epos);
 
@@ -322,7 +324,7 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 			enemies.erase(std::remove(enemies.begin(), enemies.end(), enemies[i]));
 			i--;
 
-			planet.health -= 5;
+			planet.health -= 10;
 
 		}
 
@@ -390,6 +392,23 @@ void UpdateGameObjects(float delta_time, sf::RenderWindow * window) {
 
 void InitializeGameObjects() {
 
+	// get rid of the biggest memory leaks god i am the worst programmer on this earth
+	for (int i = 0; i < towers.size(); i++) {
+		delete towers[i]->sprite;
+	}
+	for (int i = 0; i < enemies.size(); i++) {
+		delete enemies[i]->sprite;
+	}
+	for (int i = 0; i < bullets.size(); i++) {
+		delete bullets[i]->sprite;
+	}
+
+	towers.clear();
+	enemies.clear();
+	bullets.clear();
+
+	game_timer = 0;
+
 	extra_towers_bitfield = 0;
 
 	// Enemy texture
@@ -412,7 +431,7 @@ void InitializeGameObjects() {
 	planet.sprite = planet_sprite;
 	planet.radius = planet_sprite->getGlobalBounds().height / 2;
 	planet.rotating = false;
-	planet.health = 50;
+	planet.health = 30;
 	general_render_queue.push_back(planet_sprite);
 	
 }

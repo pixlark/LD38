@@ -37,6 +37,7 @@ extern Cursors cursors;
 extern sf::Text * debug_text;
 extern int towers_left;
 
+void UpdateCursor(sf::RenderWindow * window);
 bool ButtonCheck(sf::Vector2i mouse_pos);
 void UpdateUI(float delta_time, sf::RenderWindow * window);
 void InitializeUI();

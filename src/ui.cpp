@@ -7,13 +7,16 @@
 #include "gameobjects.hpp"
 #include "sound.hpp"
 #include "particles.hpp"
+#include "state.hpp"
 
 sf::Font * default_font;
 BuyButtons buy_buttons;
 sf::Text * debug_text;
 sf::Text * towers_text;
+sf::Text * end_round_time_text;
 
 sf::Texture * default_button_texture;
+sf::Sprite * game_over_sprite;
 ProgressBar planet_health_bar;
 
 Cursors cursors;
@@ -88,9 +91,15 @@ bool ButtonCheck(sf::Vector2i mouse_pos) {
 
 }
 
-void UpdateUI(float delta_time, sf::RenderWindow * window) {
+void UpdateCursor(sf::RenderWindow * window) {
 
 	cursor_sprite->setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(*window)));
+
+}
+
+void UpdateUI(float delta_time, sf::RenderWindow * window) {
+
+	UpdateCursor(window);
 
 	// Update health bar
 	sf::Vector2f bar_size;
@@ -102,6 +111,15 @@ void UpdateUI(float delta_time, sf::RenderWindow * window) {
 	std::stringstream towers_left_stream;
 	towers_left_stream << towers_left;
 	towers_text->setString(towers_left_stream.str());
+
+	if (planet.health <= 0) { // game over
+		ui_render_queue.push_back(game_over_sprite);
+		std::stringstream ertt_stream;
+		ertt_stream << "You defended for " << game_timer << " seconds";
+		end_round_time_text->setString(ertt_stream.str());
+		ui_render_queue.push_back(end_round_time_text);
+		game_state = PAUSED;
+	}
 	
 }
 
@@ -164,6 +182,19 @@ void InitializeUI() {
 	ui_render_queue.push_back(towers_text);
 	towers_left = 1;
 
+	// Game over screen
+	sf::Texture * game_over_texture = new sf::Texture;
+	game_over_texture->loadFromFile("../resources/game_over.png");
+	game_over_sprite = new sf::Sprite;
+	game_over_sprite->setTexture(*game_over_texture);
+
+	// End round time text
+	end_round_time_text = new sf::Text;
+	end_round_time_text->setFont(*default_font);
+	end_round_time_text->setColor(sf::Color::White);
+	end_round_time_text->setOrigin(end_round_time_text->getGlobalBounds().width / 2, end_round_time_text->getOrigin().y);
+	end_round_time_text->setPosition(1280 / 2, 600);
+
 	// Round start button
 	/*
 	sf::Sprite * rsb_sprite = new sf::Sprite;
@@ -189,7 +220,7 @@ void InitializeUI() {
 
 	planet_health_bar.bg = bar_bg_sprite;
 	planet_health_bar.bar = bar_rect;
-	planet_health_bar.max_value = 50;
+	planet_health_bar.max_value = 30;
 	planet_health_bar.max_width = 190;
 	
 	ui_render_queue.push_back(bar_bg_sprite);

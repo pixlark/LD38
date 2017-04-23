@@ -4,50 +4,79 @@
 #include "gameobjects.hpp"
 #include "ui.hpp"
 #include "sound.hpp"
+#include "state.hpp"
+#include "render.hpp"
 
 float rotate_origin_x;
 
 void ProcessInput(sf::Event event, float delta_time, sf::Vector2i mouse_pos) {
 
-	switch (event.type) {
+	if (game_state == PLAYING) {
 
-		case sf::Event::MouseButtonPressed: {
+		switch (event.type) {
 
-			if (event.mouseButton.button == sf::Mouse::Left) {
+			case sf::Event::MouseButtonPressed: {
 
-				bool over_button = ButtonCheck(mouse_pos);
+				if (event.mouseButton.button == sf::Mouse::Left) {
 
-				std::stringstream debug_stream;
-				debug_stream << over_button;
-				debug_text->setString(debug_stream.str());
+					bool over_button = ButtonCheck(mouse_pos);
 
-				if (!over_button) {
+					std::stringstream debug_stream;
+					debug_stream << over_button;
+					debug_text->setString(debug_stream.str());
 
-					planet.rotating = true;
+					if (!over_button) {
+
+						planet.rotating = true;
+
+					}
+
+				} else if (event.mouseButton.button == sf::Mouse::Right) {
+
+					if (TowerCheck(mouse_pos)) {
+						towers_left++;
+						unbuild_sound->play();
+					}
 
 				}
 
-			} else if (event.mouseButton.button == sf::Mouse::Right) {
-			
-				if (TowerCheck(mouse_pos)) {
-					towers_left++;
-					unbuild_sound->play();
+			} break;
+
+			case sf::Event::MouseButtonReleased: {
+
+				if (event.mouseButton.button == sf::Mouse::Left) {
+
+					planet.rotating = false;
+
 				}
 
+			} break;
+
+		}
+
+	} else {
+	
+		switch (event.type) {
+
+			case sf::Event::MouseButtonPressed: {
+
+				general_render_queue.clear();
+				tower_render_queue.clear();
+				enemy_render_queue.clear();
+				bullet_render_queue.clear();
+				particle_render_queue.clear();
+				ui_render_queue.clear();
+
+				InitializeGameObjects();
+				InitializeAudio();
+				InitializeUI();
+
+				game_state = PLAYING;
+
 			}
 
-		} break;
+		}
 
-		case sf::Event::MouseButtonReleased: {
-
-			if (event.mouseButton.button == sf::Mouse::Left) {
-
-				planet.rotating = false;
-
-			}
-					
-		} break;
-		
 	}
 	
 } 
